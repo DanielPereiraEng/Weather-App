@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Weather Forecasting App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    #app {
+      text-align: center;
+      padding: 20px;
+    }
+    #city {
+      font-size: 24px;
+    }
+    #temperature {
+      font-size: 36px;
+      margin-top: 10px;
+    }
+    #description {
+      font-size: 18px;
+      margin-top: 5px;
+    }
+    #forecastList {
+      font-size: 16px;
+      text-align: left;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>Weather Forecasting App</h1>
+    <input type="text" id="cityInput" placeholder="Enter city name">
+    <button onclick="getWeather()">Get Weather</button>
+    <div id="city"></div>
+    <div id="currentWeather">
+      <h2>Current Weather</h2>
+      <div id="temperature"></div>
+      <div id="description"></div>
+    </div>
+    <div id="forecast">
+      <h2>5-Day Forecast</h2>
+      <div id="forecastList"></div>
+    </div>
+  </div>
+
+  <script>
+    const apiKey = 'YOUR_OPENWEATHERMAP_API_KEY';
+
+    async function getWeather() {
+      const cityInput = document.getElementById('cityInput').value;
+      const cityElement = document.getElementById('city');
+      const temperatureElement = document.getElementById('temperature');
+      const descriptionElement = document.getElementById('description');
+      const forecastListElement = document.getElementById('forecastList');
+
+      try {
+        const currentResponse = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityInput}&units=metric&appid=${apiKey}`);
+        const currentData = await currentResponse.json();
+
+        const forecastResponse = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${cityInput}&units=metric&appid=${apiKey}`);
+        const forecastData = await forecastResponse.json();
+
+        if (currentData.cod === '404' || forecastData.cod === '404') {
+          cityElement.textContent = 'City not found';
+          temperatureElement.textContent = '';
+          descriptionElement.textContent = '';
+          forecastListElement.textContent = '';
+        } else {
+          cityElement.textContent = currentData.name;
+          temperatureElement.textContent = `${currentData.main.temp}°C`;
+          descriptionElement.textContent = currentData.weather[0].description;
+
+          const forecastList = forecastData.list;
+          forecastListElement.innerHTML = '';
+          for (const forecast of forecastList) {
+            const forecastItem = document.createElement('div');
+            forecastItem.textContent = `${forecast.dt_txt}: ${forecast.main.temp}°C, ${forecast.weather[0].description}`;
+            forecastListElement.appendChild(forecastItem);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+        cityElement.textContent = 'An error occurred';
+        temperatureElement.textContent = '';
+        descriptionElement.textContent = '';
+        forecastListElement.textContent = '';
+      }
+    }
+  </script>
+</body>
+</html>
